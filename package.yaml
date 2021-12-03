@@ -8,6 +8,7 @@ maintainer:          "stephen@v25.nl"
 dependencies:
   - base >= 4.7 && < 5
   - split
+  - extra
 
 executables:
   aoc2021:
