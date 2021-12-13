@@ -11,6 +11,7 @@ dependencies:
   - extra
   - containers
   - multiset
+  - bifunctors
 
 executables:
   aoc2021:
