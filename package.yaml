@@ -12,6 +12,7 @@ dependencies:
   - containers
   - multiset
   - bifunctors
+  - regex-pcre
 
 executables:
   aoc2021:
