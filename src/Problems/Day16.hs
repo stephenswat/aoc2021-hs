@@ -5,7 +5,7 @@ module Problems.Day16 (solution) where
 import Control.Monad (replicateM)
 import Control.Applicative (some)
 
-import Common.Parse (Parser (Parser), parse)
+import Common.Parse (Parser (Parser), parse, read1)
 import Common.Solution (Day)
 
 data Packet
@@ -17,9 +17,6 @@ toDecimal b = go . reverse $ b
     where
         go [] = 0
         go (x:xs) = (if x then 1 else 0) + 2 * (go xs)
-
-parseBit :: Parser Bool Bool
-parseBit = Parser (\case {(x:xs) -> [(x, xs)]; [] -> []})
 
 readBits :: Int -> Parser Bool [Bool]
 readBits n = Parser (return . splitAt n)
@@ -40,7 +37,7 @@ parseLiteral v = do
 
 parseOperator :: ([Packet] -> Packet) -> Parser Bool Packet
 parseOperator t = do
-    l <- parseBit
+    l <- read1
     if l then do
         c <- fmap toDecimal (readBits 11)
         p <- replicateM c parsePacket

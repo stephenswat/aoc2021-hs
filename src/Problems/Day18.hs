@@ -4,7 +4,7 @@ import Control.Applicative (Alternative (some), (<|>))
 import Data.Char (isDigit)
 
 import Common.Solution (Day, notImplemented)
-import Common.Parse (Parser (Parser), parse)
+import Common.Parse (Parser, parse, read1_, readIf)
 
 data Number
     = Literal Integer
@@ -67,24 +67,18 @@ magnitude :: Number -> Integer
 magnitude (Literal n) = n
 magnitude (Pair l r) = 3 * (magnitude l) + 2 * (magnitude r)
 
-discardChar :: Char -> Parser Char ()
-discardChar c = Parser (\(x:xs) -> if x == c then [((), xs)] else [])
-
-parseDigit :: Parser Char Char
-parseDigit = Parser (\(x:xs) -> if isDigit x then [(x, xs)] else [])
-
 parseLiteral :: Parser Char Number
 parseLiteral = do
-    ds <- some parseDigit
+    ds <- some (readIf isDigit)
     return (Literal . read $ ds)
 
 parsePair :: Parser Char Number
 parsePair = do
-    discardChar '['
+    read1_ '['
     lhs <- parseNumber
-    discardChar ','
+    read1_ ','
     rhs <- parseNumber
-    discardChar ']'
+    read1_ ']'
     return (Pair lhs rhs)
 
 parseNumber :: Parser Char Number

@@ -1,6 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Common.Parse (Parser (Parser), parse) where
+module Common.Parse (Parser (Parser), parse, read1, read1_, readIf) where
 
 import Control.Applicative (Alternative (empty, (<|>)))
 import Control.Monad (MonadPlus, mzero)
@@ -28,3 +28,12 @@ instance MonadFail (Parser f) where
 
 parse :: Parser f t -> [f] -> t
 parse (Parser f) i = fst . head . f $ i
+
+read1_ :: Eq a => a -> Parser a ()
+read1_ v = Parser (\(x:xs) -> if x == v then [((), xs)] else [])
+
+readIf :: (a -> Bool) -> Parser a a
+readIf f = Parser (\(x:xs) -> if f x then [(x, xs)] else [])
+
+read1 :: Parser a a
+read1 = Parser (\case {(x:xs) -> [(x, xs)]; [] -> []})
