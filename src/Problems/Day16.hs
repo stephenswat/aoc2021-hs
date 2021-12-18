@@ -2,35 +2,15 @@
 
 module Problems.Day16 (solution) where
 
-import Control.Applicative (Alternative (empty, (<|>)), some)
-import Control.Monad (MonadPlus, replicateM, mzero)
+import Control.Monad (replicateM)
+import Control.Applicative (some)
 
+import Common.Parse (Parser (Parser), parse)
 import Common.Solution (Day)
-
-newtype Parser f t = Parser ([f] -> [(t, [f])])
 
 data Packet
     = Literal Int Int
     | Operator Int ([Int] -> Int) [Packet]
-
-instance Functor (Parser f) where
-    fmap f (Parser g) = Parser (\i -> [(f x, xs) | (x, xs) <- g i])
-
-instance Applicative (Parser f) where
-    pure v = Parser (\i -> [(v, i)])
-    (<*>) (Parser f) (Parser g) = Parser (\i -> [(f' v, xss) | (f', xs) <- f i, (v, xss) <- g xs])
-
-instance Alternative (Parser f) where
-    empty = Parser (\_ -> [])
-    (<|>) (Parser f) (Parser g) = Parser (\i -> (f i) ++ (g i))
-
-instance Monad (Parser f) where
-    (>>=) (Parser f) g = Parser (\i -> concat [a' xs | (a, xs) <- f i, let (Parser a') = g a])
-
-instance MonadPlus (Parser f)
-
-instance MonadFail (Parser f) where
-    fail _ = mzero
 
 toDecimal :: [Bool] -> Int
 toDecimal b = go . reverse $ b
@@ -43,9 +23,6 @@ parseBit = Parser (\case {(x:xs) -> [(x, xs)]; [] -> []})
 
 readBits :: Int -> Parser Bool [Bool]
 readBits n = Parser (return . splitAt n)
-
-parse :: Parser f t -> [f] -> t
-parse (Parser f) i = fst . head . f $ i
 
 parseLiteralBits :: Parser Bool [Bool]
 parseLiteralBits = do
