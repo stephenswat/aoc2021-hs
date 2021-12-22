@@ -1,8 +1,10 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Common.Parse (Parser (Parser), parse, read1, read1_, readIf, readExact, readExact_, readOptional) where
+module Common.Parse (Parser (Parser), parse, read1, read1_, readIf, readExact, readExact_, readOptional, readInteger) where
 
-import Control.Applicative (Alternative (empty, (<|>)))
+import Data.Char (isDigit)
+
+import Control.Applicative (Alternative (empty, (<|>), some))
 import Control.Monad (MonadPlus, mzero)
 
 newtype Parser f t = Parser ([f] -> [(t, [f])])
@@ -60,3 +62,9 @@ readExact_ = discard . readExact
 
 readOptional :: Parser a [b] -> Parser a [b]
 readOptional p = p <|> Parser (\xs -> [([], xs)])
+
+readInteger :: Parser Char Integer
+readInteger = do
+    s <- readOptional (readExact "-")
+    n <- some (readIf isDigit)
+    return (read (s ++ n))
