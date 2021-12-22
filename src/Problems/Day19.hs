@@ -1,13 +1,12 @@
 module Problems.Day19 (solution) where
 
-import Control.Applicative (Alternative (some, many))
+import Control.Applicative (Alternative (many))
 import Data.List (maximumBy)
 import Data.Function (on)
-import Data.Char (isDigit)
 import Data.Set (Set, fromList, intersection, toList, map, size, union, insert, singleton, empty)
 import Data.MultiSet (fromList, occur)
 
-import Common.Parse (Parser, parse, read1_, readIf, readExact, readExact_, readOptional)
+import Common.Parse (Parser, parse, read1_, readIf, readExact_, readInteger)
 import Common.Solution (Day)
 
 type Coordinate = (Integer, Integer, Integer)
@@ -45,26 +44,19 @@ transforms =
     , \(x, y, z) -> (-z, x, -y)
     ]
 
-
-parseNumber :: Parser Char Integer
-parseNumber = do
-    s <- readOptional (readExact "-")
-    n <- some (readIf isDigit)
-    return (read (s ++ n))
-
 parseCoordinate :: Parser Char Coordinate
 parseCoordinate = do
-    p1 <- parseNumber
+    p1 <- readInteger
     read1_ ','
-    p2 <- parseNumber
+    p2 <- readInteger
     read1_ ','
-    p3 <- parseNumber
+    p3 <- readInteger
     return (p1, p2, p3)
 
 parseScanner :: Parser Char [Coordinate]
 parseScanner = do
     readExact_ "--- scanner "
-    _ <- some (readIf isDigit)
+    _ <- readInteger
     readExact_ " ---\n"
     r <- many (do
         r <- parseCoordinate

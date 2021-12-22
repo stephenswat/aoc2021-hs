@@ -1,10 +1,9 @@
 module Problems.Day18 (solution) where
 
-import Control.Applicative (Alternative (some), (<|>))
-import Data.Char (isDigit)
+import Control.Applicative ((<|>))
 
 import Common.Solution (Day, notImplemented)
-import Common.Parse (Parser, parse, read1_, readIf)
+import Common.Parse (Parser, parse, read1_, readInteger)
 
 data Number
     = Literal Integer
@@ -67,22 +66,16 @@ magnitude :: Number -> Integer
 magnitude (Literal n) = n
 magnitude (Pair l r) = 3 * (magnitude l) + 2 * (magnitude r)
 
-parseLiteral :: Parser Char Number
-parseLiteral = do
-    ds <- some (readIf isDigit)
-    return (Literal . read $ ds)
-
-parsePair :: Parser Char Number
-parsePair = do
-    read1_ '['
-    lhs <- parseNumber
-    read1_ ','
-    rhs <- parseNumber
-    read1_ ']'
-    return (Pair lhs rhs)
-
 parseNumber :: Parser Char Number
-parseNumber = parseLiteral <|> parsePair
+parseNumber = (fmap Literal readInteger) <|> parsePair
+    where
+        parsePair = do
+            read1_ '['
+            lhs <- parseNumber
+            read1_ ','
+            rhs <- parseNumber
+            read1_ ']'
+            return (Pair lhs rhs)
 
 solution :: Day
 solution = (
