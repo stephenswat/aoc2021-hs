@@ -13,6 +13,7 @@ dependencies:
   - multiset
   - bifunctors
   - regex-pcre
+  - mtl
 
 executables:
   aoc2021:
