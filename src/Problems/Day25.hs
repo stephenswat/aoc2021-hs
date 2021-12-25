@@ -2,8 +2,9 @@ module Problems.Day25 (solution) where
 
 import Control.Arrow ((&&&))
 import Data.Maybe (fromJust)
-import Data.Map (Map, fromList, filter, keys, findWithDefault, insert)
+import Data.Map (filter, keys, findWithDefault, insert)
 
+import Common.Geometry (Grid2D, readGrid2D)
 import Common.Solution (Day)
 
 data Tile
@@ -12,21 +13,18 @@ data Tile
     | Empty
     deriving (Eq, Ord, Show)
 
-type Coordinate = (Integer, Integer)
-type Grid = Map Coordinate Tile
-
-parseGrid :: String -> Grid
-parseGrid s = fromList [((x, y), parseTile c) | (y, r) <- zip [0..] (lines s), (x, c) <- zip [0..] r]
+parseGrid :: String -> Grid2D Tile
+parseGrid = fmap parseTile . readGrid2D
     where
         parseTile '.' = Empty
         parseTile '>' = Horizontal
         parseTile 'v' = Vertical
         parseTile _   = error "Not a valid tile"
 
-step :: Grid -> Grid
+step :: Grid2D Tile -> Grid2D Tile
 step = subStep Vertical . subStep Horizontal
     where
-        subStep :: Tile -> Grid -> Grid
+        subStep :: Tile -> Grid2D Tile -> Grid2D Tile
         subStep k g = foldl (\a (s, d) -> insert s Empty . insert d k $ a) g move
             where
                 limX = (+ 1) . maximum . map fst . keys $ g

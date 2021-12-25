@@ -4,8 +4,9 @@ import Control.Monad.State.Lazy (State, execState, get, modify)
 import Data.List (intercalate)
 import Data.PQueue.Prio.Min (MinPQueue, null, insert, singleton, deleteFindMin)
 import Data.Set (Set, member, insert, empty, notMember)
-import Data.Map (Map, fromList, toList, empty, findWithDefault, insertWith, filter, keys, insert, singleton, notMember)
+import Data.Map (Map, toList, empty, findWithDefault, insertWith, filter, keys, insert, singleton, notMember)
 
+import Common.Geometry (Point2D, Grid2D, neighbours4, readGrid2D)
 import Common.Solution (Day)
 
 data Amphipod
@@ -21,11 +22,7 @@ data Tile
     | Amphipod Amphipod
     deriving (Show, Eq, Ord)
 
-type Coordinate = (Integer, Integer)
-type GameState = Map Coordinate Tile
-
-neighbours :: Coordinate -> [Coordinate]
-neighbours (x, y) = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+type GameState = Grid2D Tile
 
 isOccupied :: Tile -> Bool
 isOccupied (Amphipod _) = True
@@ -44,7 +41,7 @@ isComplete g = and
     ]
 
 parseInput :: String -> GameState
-parseInput s = fromList [((x, y), parseChar c) | (y, r) <- zip [0..] (lines s), (x, c) <- zip [0..] r]
+parseInput = fmap parseChar . readGrid2D
     where
         parseChar ' ' = Wall
         parseChar '#' = Wall
@@ -55,15 +52,15 @@ parseInput s = fromList [((x, y), parseChar c) | (y, r) <- zip [0..] (lines s), 
         parseChar 'D' = Amphipod Desert
         parseChar _   = error "Cannot read character!"
 
-bfs :: Coordinate -> GameState -> [(Coordinate, Integer)]
+bfs :: Point2D -> GameState -> [(Point2D, Integer)]
 bfs c g = Prelude.filter ((/= c) . fst) . toList . execState (go [c]) $ Data.Map.empty
     where
-        go :: [Coordinate] -> State (Map Coordinate Integer) ()
+        go :: [Point2D] -> State (Map Point2D Integer) ()
         go [] = return ()
         go (x:xs) = do
             m <- get
             let v = findWithDefault 0 x m
-            let n = neighbours x
+            let n = neighbours4 x
             let f = Prelude.filter ((flip Data.Map.notMember) m) . Prelude.filter (\i -> isAccessible (findWithDefault Wall i g)) $ n
 
             modify (\i -> foldl (\a n' -> Data.Map.insert n' (v + 1) a) i f)

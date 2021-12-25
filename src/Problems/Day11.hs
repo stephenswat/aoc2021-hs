@@ -1,20 +1,12 @@
 module Problems.Day11 (solution) where
 
 import Data.Set (empty, insert, toList, (\\), union)
-import Data.Map (Map, fromList, elems, foldrWithKey, adjust, foldr)
+import Data.Map (elems, foldrWithKey, adjust, foldr, map)
 
 import Common.Solution (Day)
+import Common.Geometry (Grid2D, neighbours9, readGrid2D)
 
-type Coordinate = (Integer, Integer)
-type Grid = Map Coordinate Integer
-
-neighbours :: Coordinate -> [Coordinate]
-neighbours (x, y) = [(x + dx, y + dy) | dx <- [-1, 0, 1], dy <- [-1, 0, 1]]
-
-readGrid :: String -> Grid
-readGrid s = fromList $ [((x, y), read [c]) | (y, r) <- zip [0..] (lines s), (x, c) <- zip [0..] r]
-
-step :: Grid -> Grid
+step :: Grid2D Integer -> Grid2D Integer
 step = fmap cap . (midStep empty) . fmap (+ 1)
     where
         midStep s g
@@ -22,7 +14,7 @@ step = fmap cap . (midStep empty) . fmap (+ 1)
             | otherwise = midStep (union s flashes) n
             where
                 flashes = foldrWithKey (\k v l -> if v >= 10 then insert k l else l) empty g
-                n = Prelude.foldr (adjust (+1)) g . concat . fmap neighbours . toList . (\\ s) $ flashes
+                n = Prelude.foldr (adjust (+1)) g . concat . fmap neighbours9 . toList . (\\ s) $ flashes
         cap x = if x >= 10 then 0 else x
 
 solution :: Day
@@ -31,4 +23,4 @@ solution = (
         solve (fst . head . filter ((== 0) . Data.Map.foldr (+) 0 . snd) . zip [0..])
     )
     where
-        solve f = (show :: (Integer -> String)) . f . iterate step . readGrid
+        solve f = (show :: (Integer -> String)) . f . iterate step . Data.Map.map (\x -> read [x]) . readGrid2D

@@ -1,30 +1,24 @@
 module Problems.Day09 (solution) where
 
 import Data.List (sort, nub)
-import Data.Set (Set, size, singleton, filter, map, toList, fromList, empty, difference, union)
-import Data.Map (Map, fromList, filterWithKey, foldr, findWithDefault, elems, mapWithKey)
+import Data.Set (Set, size, singleton, filter, toList, fromList, empty, difference, union)
+import Data.Map (Map, filterWithKey, foldr, findWithDefault, elems, mapWithKey, map)
 
 import Common.Solution (Day)
+import Common.Geometry (Point2D, neighbours4, readGrid2D)
 
-type Coordinate = (Integer, Integer)
+setNeighbours :: Set Point2D -> Set Point2D
+setNeighbours s = flip difference s . Data.Set.fromList . concatMap neighbours4 . toList $ s
 
-neighbours :: Coordinate -> [Coordinate]
-neighbours (x, y) = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+readInput :: String -> Map Point2D Integer
+readInput = Data.Map.map (\x -> read [x]) . readGrid2D
 
-setNeighbours :: Set Coordinate -> Set Coordinate
-setNeighbours s = flip difference s . Data.Set.fromList . concatMap neighbours . toList $ s
-
-readInput :: String -> Map Coordinate Integer
-readInput = Data.Map.fromList . zip2d . lines
-    where
-        zip2d l = concat [[((x, y), read [c]) | (x, c) <- zip [0..] r] | (y, r) <- zip [0..] l]
-
-solveA :: Map Coordinate Integer -> Integer
+solveA :: Map Point2D Integer -> Integer
 solveA m = Data.Map.foldr ((+) . (+ 1)) 0 . filterWithKey f $ m
     where
-        f c v = and . fmap (\x -> findWithDefault 10 x m > v) . neighbours $ c
+        f c v = and . fmap (\x -> findWithDefault 10 x m > v) . neighbours4 $ c
 
-solveB :: Map Coordinate Integer -> Integer
+solveB :: Map Point2D Integer -> Integer
 solveB m = product . take 3 . reverse . sort . fmap (fromIntegral . size) . nub . elems . mapWithKey findBasin $ m
     where
         findBasinHelper s
