@@ -15,6 +15,7 @@ dependencies:
   - regex-pcre
   - mtl
   - pqueue
+  - sbv
 
 executables:
   aoc2021:
