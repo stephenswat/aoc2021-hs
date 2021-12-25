@@ -1,11 +1,9 @@
 module Problems.Day15 (solution) where
 
 import Data.Maybe (isJust, fromJust)
-import Data.Function (on)
-import Data.List (minimumBy)
-import Data.Map (singleton, insertWith, lookup, unions, mapKeys, map)
-import Data.Set (Set, singleton, empty, null, delete, notMember, insert, member)
+import Data.Map (lookup, unions, mapKeys)
 
+import Common.Algorithm (search)
 import Common.Geometry (Point2D, Grid2D, neighbours4, readGrid2D)
 import Common.Solution (Day)
 
@@ -18,27 +16,11 @@ scale g = unions
     , ny <- [0..4]
     ]
 
-readGrid :: String -> Grid2D Integer
-readGrid = Data.Map.map (\x -> read [x]) . readGrid2D
-
-dijkstra :: Point2D -> Point2D -> Grid2D Integer -> Grid2D Integer
-dijkstra c dst g = go Data.Set.empty (Data.Set.singleton c) (Data.Map.singleton c 0)
-    where
-        go :: Set Point2D -> Set Point2D -> Grid2D Integer -> Grid2D Integer
-        go a x d
-            | Data.Set.null x = d
-            | Data.Set.member dst a = d
-            | otherwise = go na nx nd
-            where
-                u = minimumBy (compare `on` (fromJust . flip (Data.Map.lookup) d)) $ x
-                (Just w) = Data.Map.lookup u d
-                na = Data.Set.insert u a
-                nb = [(p, w + (fromJust nw)) | p <- neighbours4 u, notMember p na, let nw = Data.Map.lookup p g, isJust nw]
-                nx = foldl (\m (n, _) -> Data.Set.insert n m) (delete u x) nb
-                nd = foldl (\m (n, wt) -> Data.Map.insertWith min n wt m) d nb
+run :: Point2D -> Grid2D Integer -> Maybe (Point2D, Integer)
+run d g = search (== d) (\x -> [(p, fromJust w) | p <- neighbours4 x, let w = Data.Map.lookup p g, isJust w]) (0, 0)
 
 solution :: Day
 solution = (
-        show . Data.Map.lookup (99, 99) . dijkstra (0, 0) (99, 99) . readGrid,
-        show . Data.Map.lookup (499, 499) . dijkstra (0, 0) (499, 499) . scale . readGrid
+        show . run (99, 99) . fmap (\x -> read [x]) . readGrid2D,
+        show . run (499, 499) . scale . fmap (\x -> read [x]) . readGrid2D
     )

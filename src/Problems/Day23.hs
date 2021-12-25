@@ -1,11 +1,11 @@
 module Problems.Day23 (solution) where
 
 import Control.Monad.State.Lazy (State, execState, get, modify)
+import Data.Maybe (fromJust)
 import Data.List (intercalate)
-import Data.PQueue.Prio.Min (MinPQueue, null, insert, singleton, deleteFindMin)
-import Data.Set (Set, member, insert, empty, notMember)
-import Data.Map (Map, toList, empty, findWithDefault, insertWith, filter, keys, insert, singleton, notMember)
+import Data.Map (Map, toList, empty, findWithDefault, filter, keys, insert, notMember)
 
+import Common.Algorithm (search)
 import Common.Geometry (Point2D, Grid2D, neighbours4, readGrid2D)
 import Common.Solution (Day)
 
@@ -95,20 +95,7 @@ continuations g =
         occupied = keys . Data.Map.filter isOccupied $ g
 
 play :: GameState -> Integer
-play g = go Data.Set.empty (Data.PQueue.Prio.Min.singleton 0 g) (Data.Map.singleton g 0)
-    where
-        go :: Set GameState -> MinPQueue Integer GameState -> Map GameState Integer -> Integer
-        go a x d
-            | Data.PQueue.Prio.Min.null x = 0
-            | isComplete u = w
-            | Data.Set.member u a = go na nx' nd
-            | otherwise = go na nx nd
-            where
-                ((w, u), nx') = deleteFindMin x
-                na = Data.Set.insert u a
-                nb = [(p, w + nw) | (p, nw) <- continuations u, Data.Set.notMember p na]
-                nx = foldl (\m (n, wt) -> Data.PQueue.Prio.Min.insert wt n m) nx' nb
-                nd = foldl (\m (n, wt) -> Data.Map.insertWith min n wt m) d nb
+play g = snd . fromJust . search isComplete continuations $ g
 
 prepareB :: String -> String
 prepareB s = intercalate "\n" (t ++ ["  #D#C#B#A#", "  #D#B#A#C#"] ++ b)
